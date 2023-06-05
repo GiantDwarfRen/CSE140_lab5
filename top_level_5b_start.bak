@@ -1,6 +1,6 @@
 // ECE260C -- lab 5 alternative DUT
 // applies done flag when cycle_ct = 255
-module top_level_5b(
+module top_level_5b_start(
   input          clk, init, 
   output logic   done);
 
