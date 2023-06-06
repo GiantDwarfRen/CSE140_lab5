@@ -23,7 +23,6 @@ module top_level_5b(
   assign LFSR_ptrn[3] = 6'h33;
   assign LFSR_ptrn[4] = 6'h36;
   assign LFSR_ptrn[5] = 6'h39;
-  logic[5:0] start;                  // LFSR starting state
   logic[5:0] LFSR_state[6];
   logic[5:0] match;					 // got a match for LFSR (one hot)
   logic[2:0] foundit;                // binary index equiv. of match
@@ -41,14 +40,14 @@ module top_level_5b(
          .en   (LFSR_en)  ,            // 1: advance LFSR on rising clk
          .init (load_LFSR),	            // 1: initialize LFSR
          .taps (6'h21)     ,    // tap pattern 0
-         .start(start^6'h1f) ,	            // starting state for LFSR
+         .start(data_out^6'h1f) ,	            // starting state for LFSR
          .state(LFSR_state[0]));		   // LFSR state = LFSR output 
 
   lfsr6b l1(.clk(clk) ,
   			.en (LFSR_en) ,
   			.init (load_LFSR),
   			.taps(6'h2D),   
-  			.start(start^6'h1f) ,
+  			.start(data_out^6'h1f) ,
   			.state(LFSR_state[1]));
 /* fill in the guts: continue with other 5 lfsr6b
 */
@@ -56,28 +55,28 @@ module top_level_5b(
   			.en (LFSR_en) ,
   			.init (load_LFSR),
   			.taps(6'h30),   
-  			.start(start^6'h1f) ,
+  			.start(data_out^6'h1f) ,
   			.state(LFSR_state[2]));
 
   lfsr6b l3(.clk(clk) ,
   			.en (LFSR_en) ,
   			.init (load_LFSR),
   			.taps(6'h33),   
-  			.start(start^6'h1f) ,
+  			.start(data_out^6'h1f) ,
   			.state(LFSR_state[3]));
 
   lfsr6b l4(.clk(clk) ,
   			.en (LFSR_en) ,
   			.init (load_LFSR),
   			.taps(6'h36),   
-  			.start(start^6'h1f) ,
+  			.start(data_out^6'h1f) ,
   			.state(LFSR_state[4]));
 
   lfsr6b l5(.clk(clk) ,
   			.en (LFSR_en) ,
   			.init (load_LFSR),
   			.taps(6'h39),   
-  			.start(start^6'h1f) ,
+  			.start(data_out^6'h1f) ,
   			.state(LFSR_state[5]));
 
 
@@ -136,7 +135,6 @@ per clock cycle.
 	0: begin 
            raddr     = 64;   // starting address for encrypted data to be loaded into device
 		   waddr     = 0;   // starting address for storing decrypted results into data mem
-		   start 	 = data_out;
 	     end		       // no op
 	1: begin 
            load_LFSR = 1;	  // initialize the 6 LFSRs
