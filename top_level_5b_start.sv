@@ -28,17 +28,14 @@ module top_level_5b_start(
   logic[5:0] match;					 // got a match for LFSR (one hot)
   logic[2:0] foundit;                // binary index equiv. of match
   int i;
-  int pre_length = 7;
+  int pre_length;
   //logic[7:0] decrypted;
   logic checked;
-  logic initial_pre_len = 1;
 // instantiate submodules
 // data memory -- fill in the connections
   dat_mem dm1(.clk(clk),.write_en(wr_en),.raddr(raddr),.waddr(waddr),
        .data_in(data_in),.data_out(data_out));                   // instantiate data memory
-
-  pre_len pl(.clk(clk),.en(~checked),.init(initial_pre_len),.data_in(data_in),
-			.done(checked), .pre_length(pre_length)); 
+ 
 // 6 parallel LFSRs -- fill in the missing connections
   lfsr6b l0(.clk(clk) , 
          .en   (LFSR_en)  ,            // 1: advance LFSR on rising clk
@@ -107,14 +104,25 @@ per clock cycle.
     if(init) begin
       cycle_ct <= 0;
 	  match    <= 'b0;
+	  pre_length <= 7;
+	  checked <= 0;
 	end
     else begin
+	  data_in = data_out ^ LFSR_state[foundit];
       cycle_ct <= cycle_ct + 1;
 	  if(cycle_ct== 8) begin			// last symbol of preamble
 	    for(i=0; i<6; i++) begin
 	      match[i] <= ((LFSR_state[i] ^ (6'h1f ^ data_out[5:0])) == 0);				// which LFSR state conforms to our test bench LFSR? 
 		end
-      end
+	 end
+	  if (cycle_ct > 8) begin
+			if (checked == 0 && data_in == 8'h5f) begin
+				pre_length <= pre_length + 1;
+			end
+			else begin
+				checked <= 1;
+			end
+		end
     end
   end  
 
@@ -129,7 +137,6 @@ per clock cycle.
            raddr     = 64;   // starting address for encrypted data to be loaded into device
 		   waddr     = 0;   // starting address for storing decrypted results into data mem
 		   start 	 = data_out;
-		   checked   = 0;
 	     end		       // no op
 	1: begin 
            load_LFSR = 1;	  // initialize the 6 LFSRs
@@ -146,11 +153,6 @@ per clock cycle.
 		   raddr   	= 65;			  // advance raddr
 		   waddr	= 0;
 		 end
-	71	: begin
-			raddr =  pre_length - 4;
-			waddr = 0;
-			wr_en = 1;
-		 end
 	72  : begin
             done = 1;		// send acknowledge back to test bench to halt simulation
  		    raddr =	64;
@@ -160,19 +162,16 @@ per clock cycle.
 			LFSR_en = 1;
 			raddr = 64 + cycle_ct - 2;
  	       if (cycle_ct > 8) begin
-				data_in = data_out ^ LFSR_state[foundit];
-		   		initial_pre_len = 0;
 				if (checked == 0) begin
 					waddr = 0;
 					wr_en = 0;
 				end
 				else begin
-					waddr = cycle_ct - pre_length + 2;
+					waddr = cycle_ct - pre_length -3;
 					wr_en = 1;
 				end		
 	       end
 	       else begin
-				data_in = 8'h5f;
 	       		waddr = 0;
 				wr_en = 0;
 	       end
