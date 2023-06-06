@@ -19,8 +19,8 @@ here is the padded pattern in hex
 done at time              1435000
 match = 000100  foundit = 2
 dut decryption = 
-  4d  72  5f  57  61  74  73  6f  6e  5f  63  6f  6d  65  5f  68  65  72  65  5f  49  5f  77  61  6e  74  5f  74  6f  5f  73  65  65  5f  79  6f  75  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f 
+  xx  72  5f  57  61  74  73  6f  6e  5f  63  6f  6d  65  5f  68  65  72  65  5f  49  5f  77  61  6e  74  5f  74  6f  5f  73  65  65  5f  79  6f  75  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f  5f 
 run decryption:
 ct =           0
-4d 4d   72 72   5f 5f   57 57   61 61   74 74   73 73   6f 6f   6e 6e   5f 5f   63 63   6f 6f   6d 6d   65 65   5f 5f   68 68   65 65   72 72   65 65   5f 5f   49 49   5f 5f   77 77   61 61   6e 6e   74 74   5f 5f   74 74   6f 6f   5f 5f   73 73   65 65   65 65   5f 5f   79 79   6f 6f   75 75    
+4d xx   72 72   5f 5f   57 57   61 61   74 74   73 73   6f 6f   6e 6e   5f 5f   63 63   6f 6f   6d 6d   65 65   5f 5f   68 68   65 65   72 72   65 65   5f 5f   49 49   5f 5f   77 77   61 61   6e 6e   74 74   5f 5f   74 74   6f 6f   5f 5f   73 73   65 65   65 65   5f 5f   79 79   6f 6f   75 75    
 fault_count =           0

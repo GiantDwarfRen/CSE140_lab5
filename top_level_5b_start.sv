@@ -1,6 +1,6 @@
 // ECE260C -- lab 5 alternative DUT
 // applies done flag when cycle_ct = 255
-module top_level_5b(
+module top_level_5b_start(
   input          clk, init, 
   output logic   done);
 
@@ -29,14 +29,16 @@ module top_level_5b(
   logic[2:0] foundit;                // binary index equiv. of match
   int i;
   int pre_length = 7;
-  bit check_pre_length = 1;
-  logic[7:0] read_in_byte;
-  bit data_equ;
+  //logic[7:0] decrypted;
+  logic checked;
+  logic initial_pre_len = 1;
 // instantiate submodules
 // data memory -- fill in the connections
   dat_mem dm1(.clk(clk),.write_en(wr_en),.raddr(raddr),.waddr(waddr),
        .data_in(data_in),.data_out(data_out));                   // instantiate data memory
 
+  pre_len pl(.clk(clk),.en(~checked),.init(initial_pre_len),.data_in(data_in),
+			.done(checked), .pre_length(pre_length)); 
 // 6 parallel LFSRs -- fill in the missing connections
   lfsr6b l0(.clk(clk) , 
          .en   (LFSR_en)  ,            // 1: advance LFSR on rising clk
@@ -122,13 +124,12 @@ per clock cycle.
     LFSR_en   = 'b0;   
 	wr_en     = 'b0;
 	done 	  = 0;
-	read_in_byte = data_out[5:0] ^ LFSR_state[foundit];
-	data_equ = ((LFSR_state[foundit] ^ (6'h1f ^ data_out[5:0])) == 0);
   case(cycle_ct)
 	0: begin 
            raddr     = 64;   // starting address for encrypted data to be loaded into device
 		   waddr     = 0;   // starting address for storing decrypted results into data mem
 		   start 	 = data_out;
+		   checked   = 0;
 	     end		       // no op
 	1: begin 
            load_LFSR = 1;	  // initialize the 6 LFSRs
@@ -144,34 +145,38 @@ per clock cycle.
 	       LFSR_en 	= 1;
 		   raddr   	= 65;			  // advance raddr
 		   waddr	= 0;
-		 end 
+		 end
+	71	: begin
+			raddr =  pre_length - 4;
+			waddr = 0;
+			wr_en = 1;
+		 end
 	72  : begin
             done = 1;		// send acknowledge back to test bench to halt simulation
  		    raddr =	64;
  		    waddr = 0; 
 	     end
 	default: begin	         // covers cycle_ct 4-71
-	       LFSR_en = 1;
-           raddr = 64 + cycle_ct - 2;
-		   if(cycle_ct > 8) begin   // turn on write enable
-			 if (check_pre_length) begin
-				waddr = 0;
-			 	if (!data_equ) begin
-			 		check_pre_length = 0;
-					pre_length = cycle_ct - 2;
+			LFSR_en = 1;
+			raddr = 64 + cycle_ct - 2;
+ 	       if (cycle_ct > 8) begin
+				data_in = data_out ^ LFSR_state[foundit];
+		   		initial_pre_len = 0;
+				if (checked == 0) begin
+					waddr = 0;
+					wr_en = 0;
 				end
-			 end
-			 else begin
-				wr_en = 1;
-			 	waddr = cycle_ct - pre_length - 2;
-			 end
- 		   end
-		   else begin
-		     waddr = 0;
-			 wr_en = 0;
-		   end
-		   data_in = data_out^LFSR_state[foundit];
-	     end
+				else begin
+					waddr = cycle_ct - pre_length + 2;
+					wr_en = 1;
+				end		
+	       end
+	       else begin
+				data_in = 8'h5f;
+	       		waddr = 0;
+				wr_en = 0;
+	       end
+		end        
   endcase
 end
 
